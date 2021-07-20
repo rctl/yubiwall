@@ -134,7 +134,7 @@ func main() {
 				panic(err)
 			}
 			http.SetCookie(w, &http.Cookie{
-				Name:   "token",
+				Name:   "yubiwall-token",
 				Value:  tokenString,
 				Domain: domain,
 				Secure: true,
