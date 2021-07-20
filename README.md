@@ -2,6 +2,8 @@
 
 YubiWall is a simple authentication engine that can be integrated with Nginx auth_request module to provide simple authentication when accessing HTTPS resoures. It is light weight and is designed to integrate easily with Kubernets Nignx ingress controller.
 
+While YubiWall can be helful to prevent unauthorized access to ingress resources, it is not recommended to use this as the only form of authentication.
+
 ## Installation
 
 You will need Nginx ingress controller installed. Also recommended to have cert-manager installed, templates will assume you have cert-manager configured with Lets Encrypt issuer (feel free to edit this in `kubernetes/ingress.yaml`).
