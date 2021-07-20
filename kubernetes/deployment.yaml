@@ -29,10 +29,6 @@ spec:
             value: "12345"
           - name: YUBICO_SECRET_KEY
             value: "xxxxxxxx"
-          - name: JWT_SECRET
-            value: "xxxxxxxx"
-          - name: DOMAIN
-            value: "example.com"
           - name: ALLOWED_KEYS
             value: "xxxxxxxxxxxx,yyyyyyyyyy"
 

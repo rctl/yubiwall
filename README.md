@@ -6,19 +6,19 @@ While YubiWall can be helful to prevent unauthorized access to ingress resources
 
 ## Installation
 
-You will need Nginx ingress controller installed. Also recommended to have cert-manager installed, templates will assume you have cert-manager configured with Lets Encrypt issuer (feel free to edit this in `kubernetes/ingress.yaml`).
+You will need Nginx ingress controller installed. Also recommended to have cert-manager installed, Kubernetes templates will assume you have cert-manager configured with Lets Encrypt issuer (feel free to edit this in `kubernetes/ingress.yaml`).
 
 Configure ENV variables in `kubernetes/deployment.yaml`, you will need to set the following:
 
-- YUBICO_CLIENT_ID
+- `YUBICO_CLIENT_ID`
   - Get from https://upgrade.yubico.com/getapikey/
-- YUBICO_SECRET_KEY
-- JWT_SECRET
-  - Some random secret value (to allow session persistance across yubiwall restarts)
-- DOMAIN
-  - Domain to use for setting cookie. This needs to be same domain as Yubiwall **and** the protected resource. Cross domain validation is not supported. You can use different sub domains for Yubiwall and other resources, if you do, configure the top level shared domain here.
-- ALLOWED_KEYS
+- `YUBICO_SECRET_KEY`
+- `ALLOWED_KEYS`
   - Comma separated list of allowed keys, this is the first 12 characters you get when pressing your yubikey
+- `JWT_SECRET` (optional)
+  - Set a secret value here to support persistent authentications across yubiwall restarts
+- `KEY_TTL` (optional)
+  - How many minutes an authentication will be valid.
 
 
 ```
@@ -48,6 +48,8 @@ One authenticated you will be able to access during the session (also for resour
 
 ![success](https://raw.githubusercontent.com/rctl/yubiwall/master/demo/success.png)
 
+Yubiwall and your protected ingress need to share the same top level hostname. Ex. `auth.example.com` and `my-service.example.com` will work, but you cannot host Yubiwall on another host (ex. `something-else.com`). Tokens are shared across all sub-domains, you only need to authenticate once per top level hostname.
+
 ## Troubleshooting 
 
 Here are some common error messages:
@@ -69,7 +71,7 @@ Token is not valid (ex. reused or invalid)
 Here are some improvements I am planning:
 
 - Multi domain handling
+- Set yubikey ID per ingress
 - Automatic configure of Ingress via Kubernetes API and separate annotation
 - Code clean-up
-- Automatic generation of JWT_SECRET if none is provided
 - Better logging
