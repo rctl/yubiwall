@@ -50,8 +50,24 @@ One authenticated you will be able to access during the session (also for resour
 
 Here are some common error messages:
 
-`Token was invalid, please try again.` - Authentication with Yubico API failed (ex. entered token is malformed)
+`Token was invalid, please try again.`
 
-`Token was valid, but is not in list of allowed keys.` - Make sure your key ID is in the allowed keys (first 12 chars of your token)
+Authentication with Yubico API failed (ex. entered token is malformed)
 
-`Authentication failed, please try again.` - Token is not valid (ex. reused or invalid)
+`Token was valid, but is not in list of allowed keys.`
+
+Make sure your key ID is in the allowed keys (first 12 chars of your token)
+
+`Authentication failed, please try again.`
+
+Token is not valid (ex. reused or invalid)
+
+## Improvements 
+
+Here are some improvements I am planning:
+
+- Multi domain handling
+- Automatic configure of Ingress via Kubernetes API and separate annotation
+- Code clean-up
+- Automatic generation of JWT_SECRET if none is provided
+- Better logging
