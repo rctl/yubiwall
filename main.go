@@ -1,15 +1,18 @@
 package main
 
 import (
-	"log"
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
-    "strings"
+	"strconv"
+	"strings"
+	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/GeertJohan/yubigo"
+	jwt "github.com/dgrijalva/jwt-go"
 )
 
 func contains(arr []string, v string) bool {
@@ -21,14 +24,28 @@ func contains(arr []string, v string) bool {
 	return false
 }
 
-
 func main() {
 	//Fetch parameters from ENV
 	domain := os.Getenv("DOMAIN")
 	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
 	clientId := os.Getenv("YUBICO_CLIENT_ID")
 	clientSecret := os.Getenv("YUBICO_SECRET_KEY")
+	keyTTL := int64(60 * 120) //2h
 	allowedKeys := strings.Split(os.Getenv("ALLOWED_KEYS"), ",")
+
+	//Parse key TTL value in minutes
+	envKeyTTL := os.Getenv("KEY_TTL")
+	if envKeyTTL != "" {
+		v, err := strconv.Atoi(envKeyTTL)
+		if err != nil {
+			panic(err)
+		}
+		keyTTL = int64(v * 60)
+	}
+
+	if domain == "" || len(jwtSecret) == 0 || clientId == "" || clientSecret == "" || len(allowedKeys) == 0 {
+		panic(errors.New("Environment values are misconfigured"))
+	}
 
 	fmt.Println("Auth server is up and running")
 	fmt.Printf("Domain: %s, Allowed Keys: %v\n", domain, allowedKeys)
@@ -53,13 +70,23 @@ func main() {
 				if err != nil {
 					fmt.Println("GET /verify - Bad token")
 					w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte("Failed to parse token"))
+					w.Write([]byte("Failed to parse token"))
 					return
 				}
-				if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+					expires, err := strconv.ParseInt(claims["expires"].(string), 10, 64)
+					if err != nil {
+						panic(err)
+					}
+					if expires < time.Now().Unix() {
+						fmt.Println("GET /verify - Bad token (expired)")
+						w.WriteHeader(http.StatusUnauthorized)
+						w.Write([]byte("Token Expired"))
+					}
+					w.Header().Set("Yubikey-ID", claims["id"].(string))
 					fmt.Println("GET /verify - OK")
 					w.WriteHeader(http.StatusOK)
-				w.Write([]byte("Authentication succeeded"))
+					w.Write([]byte("Authentication succeeded"))
 					return
 				}
 			}
@@ -69,7 +96,7 @@ func main() {
 		w.Write([]byte("Authentication failed"))
 	})
 
-	//Endpoint to verify login 
+	//Endpoint to verify login
 	http.HandleFunc("/auth", func(w http.ResponseWriter, r *http.Request) {
 		//Request parsing
 		if err := r.ParseForm(); err != nil {
@@ -99,15 +126,16 @@ func main() {
 			}
 			//Generate and return cookie
 			token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-				"authenticated": "true",
+				"expires": strconv.FormatInt(time.Now().Unix()+keyTTL, 10),
+				"id":      secret[:12],
 			})
 			tokenString, err := token.SignedString(jwtSecret)
 			if err != nil {
 				panic(err)
 			}
 			http.SetCookie(w, &http.Cookie{
-				Name: "token",
-				Value: tokenString,
+				Name:   "token",
+				Value:  tokenString,
 				Domain: domain,
 				Secure: true,
 			})
@@ -124,7 +152,7 @@ func main() {
 	//Login frontend
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("GET /login")
-		http.ServeFile(w, r, "./index.html");
+		http.ServeFile(w, r, "./index.html")
 	})
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
