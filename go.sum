@@ -1,0 +1,4 @@
+github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e h1:Bqtt5C+uVk+vH/t5dmB47uDCTwxw16EYHqvJnmY2aQc=
+github.com/GeertJohan/yubigo v0.0.0-20190917122436-175bc097e60e/go.mod h1:njRCDrl+1RQ/A/+KVU8Ho2EWAxUSkohOWczdW3dzDG0=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
+github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=

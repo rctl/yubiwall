@@ -1,0 +1,73 @@
+<html>
+    <head>
+        <title>Authentication Required</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body, html {
+			background-color: #e3e3e3;
+			width: 99%;
+			font-family:'Verdana';
+			color: #595959;
+		}
+		.container {
+			margin: auto;
+			margin-top: 20%;
+			text-align: center;
+		}
+		.header {
+			font-weight:normal;
+		}
+		.icon {
+			margin: auto;
+		}
+		.error {
+			font-weight:bold;
+			color: red;
+		}
+		.description {
+			font-size: 12pt;
+		}
+		.footer {
+			position: fixed;
+			bottom: 0;
+			color: #8a8a8a;
+			padding: 10px;
+			font-size: 7.5pt;
+		}
+	</style>
+    </head>
+    <body>
+	<div class="container">
+		<img class="icon" src="https://icongr.am/clarity/sign-in.svg?size=80&color=595959">
+		<h2 class="header">Authentication Required</h2>
+		<p class="error" id="message"></p>
+		<p class="description">Please insert and touch Yubikey for authentication.<p>
+	</div>
+	<div class="footer">
+		Authentication provided by <a href="https://github.com/rctl/yubiwall" target="_blank">Yubiwall</a>.
+	</div>
+        <form action="/auth" method="POST" id="form">
+            <input type="hidden" name="secret" id="secret">
+            <input type="hidden" name="redirect" id="redirect">
+        </form>
+        <script>
+            // Preserve redirect on form submission
+            let params = new URLSearchParams(window.location.search)
+            document.getElementById("redirect").value = params.get('rd');
+            if (params.get("message")) {
+                document.getElementById("message").innerHTML = params.get("message")
+            }
+            let token = "";
+            window.addEventListener(
+                "keydown",
+                function(event) {
+                    if (event.key == "Enter") {
+                        document.getElementById("secret").value = token
+                        document.getElementById("form").submit();
+                    }
+                    token += event.key
+                }
+            )
+        </script>
+    </body>
+</html>
