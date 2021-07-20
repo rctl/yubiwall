@@ -1,0 +1,27 @@
+# This is a sample ingress using Yubiwall
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: yubiwall-example
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    # Set this to the endpoint where Yubiwall is running
+    # The base domain (ex. example.com) need to be the same as this resource
+    nginx.ingress.kubernetes.io/auth-url: "https://auth.example.com/verify"
+    nginx.ingress.kubernetes.io/auth-signin: "https://auth.example.com/login"
+spec:
+  tls:
+  - hosts:
+    - test.example.com
+    secretName: example-tls
+  rules:
+  - host: "test.example.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: example
+            port:
+              number: 80
