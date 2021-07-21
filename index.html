@@ -34,14 +34,33 @@
 			padding: 10px;
 			font-size: 7.5pt;
 		}
+		.loader {
+			border: 16px solid #f3f3f3; /* Light grey */
+			border-top: 16px solid #3498db; /* Blue */
+			border-radius: 50%;
+			width: 80px;
+			height: 80px;
+			margin: auto;
+			animation: spin 2s linear infinite;
+		}
+		#loader {
+			display: none;
+		}
+		@keyframes spin {
+	  		0% { transform: rotate(0deg); }
+	  		100% { transform: rotate(360deg); }
+		}
 	</style>
     </head>
     <body>
 	<div class="container">
-		<img class="icon" src="https://icongr.am/clarity/sign-in.svg?size=80&color=595959">
-		<h2 class="header">Authentication Required</h2>
-		<p class="error" id="message"></p>
-		<p class="description">Please insert and touch Yubikey for authentication.<p>
+		<div id="loader" class="loader"></div>
+		<div id="main">
+			<img class="icon" src="https://icongr.am/clarity/sign-in.svg?size=80&color=595959">
+			<h2 class="header">Authentication Required</h2>
+			<p class="error" id="message"></p>
+			<p class="description">Please insert and press Yubikey for authentication.<p>
+		</div>
 	</div>
 	<div class="footer">
 		Authentication provided by <a href="https://github.com/rctl/yubiwall" target="_blank">Yubiwall</a>.
@@ -57,15 +76,29 @@
             if (params.get("message")) {
                 document.getElementById("message").innerHTML = params.get("message")
             }
+	    function error(message) {
+                document.getElementById("main").style.display = "block";
+                document.getElementById("loader").style.display = "none";
+                document.getElementById("message").innerHTML = message;
+	    }
             let token = "";
             window.addEventListener(
                 "keydown",
                 function(event) {
                     if (event.key == "Enter") {
-                        document.getElementById("secret").value = token
+                    	document.getElementById("secret").value = token.slice(-44);
                         document.getElementById("form").submit();
                     }
                     token += event.key
+		    if (token.length == 1) {
+		    	document.getElementById("main").style.display = "none";
+			document.getElementById("loader").style.display = "block";
+			setTimeout(function(){
+				//Reset token and display error message
+				token = ""
+				error("Timed out waiting for token, make sure your Yubikey is configured to send 'Enter' after token entry.")
+			}, 5000);
+		    }
                 }
             )
         </script>

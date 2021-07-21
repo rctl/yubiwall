@@ -184,6 +184,7 @@ func main() {
 				Value:  tokenString,
 				Domain: authDomain,
 				Secure: true,
+				MaxAge: int(keyTTL),
 			})
 			http.Redirect(w, r, redirect, http.StatusFound)
 			return
